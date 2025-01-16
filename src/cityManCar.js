@@ -118,13 +118,6 @@ gltfLoader.load("/models/VirtualCity/VirtualCity.gltf", (gltf) => {
 
 // Load City Model
 
-gltfLoader.load("/models/Car/Car.gltf", (gltf) => {
-  scene.add(gltf.scene);
-  car = gltf.scene;
-  car.position.x = -23;
-  car.position.z = 1;
-});
-
 // Load CesiumMan Model
 gltfLoader.load("/models/Man/CesiumMan.gltf", (gltf) => {
   cesiumMan = gltf.scene;
