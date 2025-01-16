@@ -100,107 +100,69 @@ renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
  */
 const gltfLoader = new GLTFLoader();
 let city = null;
+
 let cesiumMan = null; // To store the CesiumMan model
 let mixer = null;
 let action1 = null;
 
-// Function to load models asynchronously
-const loadModels = () => {
-  return Promise.all([
-    new Promise((resolve, reject) =>
-      gltfLoader.load(
-        "/models/VirtualCity/VirtualCity.gltf",
-        (gltf) => {
-          city = gltf.scene;
-          city.traverse((child) => {
-            if (child.isMesh) {
-              child.castShadow = true;
-              child.receiveShadow = true;
-            }
-          });
-          scene.add(city);
-          resolve();
-        },
-        undefined,
-        reject
-      )
-    ),
-    new Promise((resolve, reject) =>
-      gltfLoader.load(
-        "/models/Man/CesiumMan.gltf",
-        (gltf) => {
-          cesiumMan = gltf.scene;
-          cesiumMan.castShadow = true;
-          cesiumMan.receiveShadow = true;
-          mixer = new THREE.AnimationMixer(cesiumMan);
-          action1 = mixer.clipAction(gltf.animations[0]);
-          action1.play();
-          scene.add(cesiumMan);
-          cesiumMan.position.set(-11.7, 0, 0);
-          resolve();
-        },
-        undefined,
-        reject
-      )
-    ),
-    new Promise((resolve, reject) =>
-      gltfLoader.load(
-        "/models/swat/scene.gltf",
-        (gltf) => {
-          const mesh = gltf.scene;
-          scene.add(mesh);
+// Load City Model
+gltfLoader.load("/models/VirtualCity/VirtualCity.gltf", (gltf) => {
+  city = gltf.scene;
+  city.traverse((child) => {
+    if (child.isMesh) {
+      child.castShadow = true;
+      child.receiveShadow = true;
+    }
+  });
+  scene.add(city);
+});
 
-          mesh.position.set(0, 0, -15.2);
-          mesh.scale.set(6, 6, 6);
-          resolve();
-        },
-        undefined,
-        reject
-      )
-    ),
-    new Promise((resolve, reject) =>
-      gltfLoader.load(
-        "/models/falcon/scene.gltf",
-        (gltf) => {
-          const mesh = gltf.scene;
-          mesh.traverse((child) => {
-            if (child.isMesh) {
-              child.castShadow = true;
-              child.receiveShadow = true;
-            }
-          });
-          scene.add(mesh);
-          mesh.position.set(0, 11, 0);
-          animateMesh(mesh);
-          resolve();
-        },
-        undefined,
-        reject
-      )
-    ),
-  ]);
-};
+// Load CesiumMan Model
+gltfLoader.load("/models/Man/CesiumMan.gltf", (gltf) => {
+  cesiumMan = gltf.scene;
+  cesiumMan.castShadow = true;
+  cesiumMan.receiveShadow = true;
+  mixer = new THREE.AnimationMixer(cesiumMan);
+  action1 = mixer.clipAction(gltf.animations[0]);
+  action1.play();
 
-// Helper function for animation
-const animateMesh = (mesh) => {
+  scene.add(cesiumMan);
+
+  // Set initial position for CesiumMan
+  // cesiumMan.position.set(0, 0, 0); // You can modify this based on the city's coordinates
+
+  cesiumMan.position.set(-11.7, 0, 0);
+  cesiumMan.scale.set(1, 1, 1);
+});
+
+gltfLoader.load("/models/swat/scene.gltf", (gltf) => {
+  scene.add(gltf.scene);
+  gltf.scene.position.set(0, 0, -15.2);
+  gltf.scene.scale.set(6, 6, 6);
+});
+
+gltfLoader.load("/models/falcon/scene.gltf", (gltf) => {
+  const mesh = gltf.scene;
+  mesh.traverse((child) => {
+    if (child.isMesh) {
+      child.castShadow = true;
+      child.receiveShadow = true;
+    }
+  });
+  scene.add(mesh);
+  mesh.position.set(0, 11, 0);
+
   const clock = new THREE.Clock();
+
   const animate = () => {
     const elapsedTime = clock.getElapsedTime();
     mesh.position.z = Math.cos(elapsedTime * 0.1) * 8;
     mesh.position.x = -Math.sin(elapsedTime * 0.1) * 23;
     window.requestAnimationFrame(animate);
   };
-  animate();
-};
 
-loadModels()
-  .then(() => {
-    // All models are loaded
-    console.log("Models loaded successfully!");
-  })
-  .catch((error) => {
-    console.error("Error loading models:", error);
-  });
+  animate();
+});
 
 // Particles
 const particleCount = 500;
@@ -274,6 +236,7 @@ const moveManInsideCity = () => {
 
 // Helper function to get the city bounds
 const getCityBounds = () => {
+  // Replace this with actual logic to determine the city boundaries from the city model.
   return {
     minX: -15,
     maxX: 15,
@@ -282,10 +245,11 @@ const getCityBounds = () => {
   };
 };
 
+// Particle movement speed
 const particleSpeed = 0.01;
 const clock = new THREE.Clock();
 let direction = new THREE.Vector3(0, 0, 1); // Direction of movement (right along the x-axis)
-const moveSpeed = 0.02;
+const moveSpeed = 0.02; // Speed of the walking animation
 
 const tick = () => {
   const elapsedTime = clock.getElapsedTime();
@@ -296,9 +260,9 @@ const tick = () => {
     mixer.update(deltaTime);
   }
 
+  // Move the man inside the city
   moveManInsideCity();
 
-  // Update particle positions
   const positions = particleGeometry.attributes.position.array;
   for (let i = 0; i < particleCount; i++) {
     positions[i * 3 + 1] -= particleSpeed;
