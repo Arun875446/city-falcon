@@ -259,6 +259,9 @@ const tick = () => {
   }
   particleGeometry.attributes.position.needsUpdate = true;
 
+  camera.position.z = Math.cos(elapsedTime * 0.1) * 21;
+  camera.position.x = -Math.sin(elapsedTime * 0.1) * 23;
+
   controls.update();
 
   renderer.render(scene, camera);
